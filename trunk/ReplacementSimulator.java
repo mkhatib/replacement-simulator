@@ -1,12 +1,14 @@
 import java.util.*;
+import java.awt.*;
+import javax.swing.*;
 /**
  * <<Class summary>>
  *
  * @author Mohammad Khatib &lt;&gt;
  * @version $Rev$
  */
-public final class ReplacementSimulator {
-    
+public final class ReplacementSimulator  extends JFrame{
+    PagesPanel pagesPanel = new PagesPanel(16);
 	public static final int UNIFORM_DIST = 0, GAUSSIAN_DIST = 1;
 	public static final int FIFO = 0, LRU = 1;
 	
@@ -17,16 +19,13 @@ public final class ReplacementSimulator {
      * 
      */
     public ReplacementSimulator() {
-        int[] refString1 = generateReferenceString(1000,1000,UNIFORM_DIST);
-		/*int sum=0;
-				for(int i=0; i<refString1.length ;i++){
-					System.out.println(refString1[i]);
-					sum += refString1[i];
-				}
-				System.out.println("AVERAGE: " + sum/refString1.length);*/
-		
-		// RefString, pageSize, Memory Size, Policy
-		int pageFaults = calculatePageFaults(refString1, 1, 256, LRU); // FIFO, 16KB
+		super();
+		pagesPanel.setNextReplacePage(0);
+		setSize(600,200);
+		add(pagesPanel);
+		setVisible(true);
+        int[] refString1 = generateReferenceString(1000,100,UNIFORM_DIST);
+		int pageFaults = calculatePageFaults(refString1, 1, 16, FIFO); // FIFO, 16KB
 		System.out.println("Num Of Faults: " + pageFaults);
 		
 		
@@ -47,6 +46,7 @@ public final class ReplacementSimulator {
 		if(dist == UNIFORM_DIST) {
 			for(int i=0; i<numOfReferences; i++)
 				referenceString[i] = 1 + random.nextInt(numOfVirtualPages);
+				
 		}
 		else if(dist == GAUSSIAN_DIST){
 			// Calculation Of the Mean
@@ -85,15 +85,45 @@ public final class ReplacementSimulator {
 		ArrayList<Integer> queue = new ArrayList<Integer>();
 		int numOfFaults=0;
 		if(policy == FIFO){
+			
 			int nextPageIndex=0;
 			for(int i=0; i<refStrings.length; i++){
 				System.out.println("QUEUE: " + queue);
 				System.out.println("ITEM: " + refStrings[i]);
-				if(queue.contains(refStrings[i])) continue;
-				if(queue.size() < numOfPages) queue.add(refStrings[i]);
-				else queue.set(nextPageIndex, refStrings[i]);
+				if(queue.contains(refStrings[i])) 
+				{	
+					// Highlight the Page
+					pagesPanel.highlightPage(queue.indexOf(refStrings[i]));
+					try {
+						Thread.sleep(1000);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
+					continue;
+				}
+				if(queue.size() < numOfPages){
+					queue.add(refStrings[i]);
+					pagesPanel.setPage(refStrings[i]);
+					try {
+						Thread.sleep(1000);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				} 
+				else 
+				{
+					queue.set(nextPageIndex, refStrings[i]);
+					pagesPanel.setPage(refStrings[i]);
+					try {
+						Thread.sleep(1000);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
 				numOfFaults++;
 				nextPageIndex++; nextPageIndex %= numOfPages;
+				pagesPanel.setNextReplacePage(nextPageIndex);
 			}
 		}
 		else if(policy == LRU){
