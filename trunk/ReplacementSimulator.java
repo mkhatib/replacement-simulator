@@ -1,17 +1,21 @@
 import java.util.*;
 import java.awt.*;
 import javax.swing.*;
+import java.awt.event.*;
 /**
  * <<Class summary>>
  *
  * @author Mohammad Khatib &lt;&gt;
  * @version $Rev$
  */
-public final class ReplacementSimulator  extends JFrame{
-    PagesPanel pagesPanel = new PagesPanel(16);
+public final class ReplacementSimulator extends Thread {
+    PagesPanel pagesPanel;// = new PagesPanel(16);
+	
 	public static final int UNIFORM_DIST = 0, GAUSSIAN_DIST = 1;
 	public static final int FIFO = 0, LRU = 1;
 	
+	
+	private int delay=1000; //miliseconds
 	private int pageSize = 1; // 1KB
 	private int memorySize;
 	private int policy;
@@ -19,14 +23,16 @@ public final class ReplacementSimulator  extends JFrame{
 	private int numOfVirtualPages;
 	private int numOfReferences;
 	
-
+	
+	ArrayList<ActionListener> listeners = new ArrayList<ActionListener>();
+	
 	// {{{ ReplacementSimulator constructor
     /**
      * 
      */
-    public ReplacementSimulator() {
-		super();
-		
+    public ReplacementSimulator(PagesPanel pp) {
+		//super();
+		pagesPanel = pp;
 		/* MainGUI mainFrame = new MainGUI(); // Create a frame
 			  
 			  mainFrame.setSize(500, 500); // Set the frame size
@@ -35,10 +41,11 @@ public final class ReplacementSimulator  extends JFrame{
 				
 				
 			     mainFrame.setVisible(true);  */
-		 pagesPanel.setNextReplacePage(0);
-		setSize(600,200);
-		add(pagesPanel);
-		setVisible(true);  
+			
+		pagesPanel.setNextReplacePage(0);
+		//setSize(600,200);
+		//add(pagesPanel);
+		//setVisible(true);  
        // int[] refString1 = generateReferenceString(1000,100,UNIFORM_DIST);
 		//int pageFaults = calculatePageFaults(refString1, 1, 16, FIFO); // FIFO, 16KB
 		//System.out.println("Num Of Faults: " + pageFaults);
@@ -48,6 +55,25 @@ public final class ReplacementSimulator  extends JFrame{
 		
     }
 	// }}}
+	
+	/**
+	 * run
+	 *
+	 * @param  
+	 * @return 
+	 */
+	public void run() {
+		try {
+			int[] refString1 = generateReferenceString(numOfReferences,numOfVirtualPages,distribution);
+			int pageFaults = calculatePageFaults(refString1, pageSize, memorySize, policy); // FIFO, 16KB
+		} catch (Exception e) {
+			// expression
+		} finally {
+			// expression
+		}
+	}
+
+	
 	
 	
 	/**
@@ -112,7 +138,7 @@ public final class ReplacementSimulator  extends JFrame{
 					// Highlight the Page
 					pagesPanel.highlightPage(queue.indexOf(refStrings[i]));
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(delay);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -123,7 +149,7 @@ public final class ReplacementSimulator  extends JFrame{
 					queue.add(refStrings[i]);
 					pagesPanel.setPage(refStrings[i]);
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(delay);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -133,12 +159,13 @@ public final class ReplacementSimulator  extends JFrame{
 					queue.set(nextPageIndex, refStrings[i]);
 					pagesPanel.setPage(refStrings[i]);
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(delay);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}
 				numOfFaults++;
+				notifyListeners(new ActionEvent(this,numOfFaults, "New Fault"));
 				nextPageIndex++; nextPageIndex %= numOfPages;
 				pagesPanel.setNextReplacePage(nextPageIndex);
 			}
@@ -153,20 +180,100 @@ public final class ReplacementSimulator  extends JFrame{
 				int index=-1;
 				if((index = queue.indexOf(refStrings[i])) != -1) 
 				{
+					pagesPanel.highlightReference(refStrings[i]);
+					try {
+						Thread.sleep(delay);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 					queue.remove(index);
 					flag = false;
 				}	
-				if(queue.size() < numOfPages) queue.add(refStrings[i]);
+				if(queue.size() < numOfPages) 
+				{
+					queue.add(refStrings[i]);
+					if(flag) {
+						System.out.println("NEXT: " + (queue.size()-1));
+						pagesPanel.setPage(refStrings[i]);
+						//pagesPanel.setNextReplacePage(queue.size()-1/*refStrings[i]*/);
+						
+						
+						pagesPanel.setNextReplacePage(queue.size()-1);
+						pagesPanel.setNextReplace(queue.size());	
+					}
+					else if(!(queue.size() < numOfPages))
+					{
+						pagesPanel.setNextReplaceReference(queue.get(0));
+						pagesPanel.setNextReplace(i);						
+						
+					} 
+					else if(queue.size() < numOfPages){
+						System.out.println("NEXT: " + queue.size());
+						
+						pagesPanel.setNextReplacePage(queue.size());
+					}
+					try {
+						Thread.sleep(delay);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
 				else {
+					//pagesPanel.setNextReplaceReference(queue.get(0));
+					pagesPanel.replacePages(queue.get(0),refStrings[i]);
 					queue.remove(0);
 					queue.add(refStrings[i]);
+					pagesPanel.setNextReplaceRef(queue.get(0));						
+					
+					try {
+						Thread.sleep(delay);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
 				}
-				if(flag) numOfFaults++;
+				if(flag) {
+					numOfFaults++;
+					notifyListeners(new ActionEvent(this,numOfFaults, "New Fault"));
+				}
 			}
 		}
+		notifyListeners(new ActionEvent(this,numOfFaults, "Simulation Finished"));
 		return numOfFaults;
 	}
 
+
+
+	/**
+	 * addActionListener
+	 *
+	 * @param  
+	 * @return 
+	 */
+	public void addActionListener(ActionListener l ) {
+		if(listeners.contains(l)) return;
+		listeners.add(l);
+	}
+	
+	/**
+	 * notifyListeners
+	 *
+	 * @param  
+	 * @return 
+	 */
+	public void notifyListeners(ActionEvent e) {
+		if(listeners.size() == 0) return;
+		ArrayList<ActionListener> copy;
+		synchronized(this){
+			copy = (ArrayList<ActionListener>)listeners.clone();
+		}
+		for(int i=0; i< copy.size(); i++)
+			copy.get(i).actionPerformed(e);
+	}
+
+	
+
+	
 	public void setMemorySize(int mSize)
 	{
 		
@@ -219,8 +326,12 @@ public final class ReplacementSimulator  extends JFrame{
 		return distribution;
 	}	
 	
+	public void setDelay(int delay){
+		this.delay = delay;
+	}
+	
 	public static void main(String[] args) {
-		ReplacementSimulator rs = new ReplacementSimulator();
+		//ReplacementSimulator rs = new ReplacementSimulator();
 		
 	}
 }

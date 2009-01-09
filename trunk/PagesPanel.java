@@ -70,7 +70,43 @@ public final class PagesPanel extends JPanel{
 		
 	}
 
+	public void highlightReference(int ref ) {
+		int index = indexOf(ref);
+		if(index == -1) return;
+		pageLabels[index].setBackground(Color.WHITE);
+		
+	}
 	
+	/**
+	 * replacePages
+	 *
+	 * @param  
+	 * @return 
+	 */
+	public void replacePages(int ref1, int ref2 ) {
+		int index = indexOf(ref1);
+		if(index == -1) return;
+		pageLabels[index].setText(""+ref2);
+		pageLabels[index].setBackground(Color.RED);
+		pages[index] = ref2;
+	}
+
+	/**
+	 * setNextReplace
+	 *
+	 * @param i 
+	 * @return 
+	 */
+	public void setNextReplace(int i) {
+		nextReplace = i;
+	}
+
+	public void setNextReplaceRef(int ref) {
+		int index = indexOf(ref);
+		if(index == -1) return;
+		nextReplace = index;
+		
+	}
 	
 	/**
 	 * indexOf
