@@ -13,6 +13,12 @@ public final class ReplacementSimulator  extends JFrame{
 	public static final int FIFO = 0, LRU = 1;
 	
 	private int pageSize = 1; // 1KB
+	private int memorySize;
+	private int policy;
+	private int distribution;
+	private int numOfVirtualPages;
+	private int numOfReferences;
+	
 
 	// {{{ ReplacementSimulator constructor
     /**
@@ -20,13 +26,24 @@ public final class ReplacementSimulator  extends JFrame{
      */
     public ReplacementSimulator() {
 		super();
-		pagesPanel.setNextReplacePage(0);
+		
+		/* MainGUI mainFrame = new MainGUI(); // Create a frame
+			  
+			  mainFrame.setSize(500, 500); // Set the frame size
+			    mainFrame.setLocationRelativeTo(null); // New since JDK 1.4
+			    mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				
+				
+			     mainFrame.setVisible(true);  */
+		 pagesPanel.setNextReplacePage(0);
 		setSize(600,200);
 		add(pagesPanel);
-		setVisible(true);
-        int[] refString1 = generateReferenceString(1000,100,UNIFORM_DIST);
-		int pageFaults = calculatePageFaults(refString1, 1, 16, FIFO); // FIFO, 16KB
-		System.out.println("Num Of Faults: " + pageFaults);
+		setVisible(true);  
+       // int[] refString1 = generateReferenceString(1000,100,UNIFORM_DIST);
+		//int pageFaults = calculatePageFaults(refString1, 1, 16, FIFO); // FIFO, 16KB
+		//System.out.println("Num Of Faults: " + pageFaults);
+		//int[] refString1 = generateReferenceString(getNumOfReferences(),getNumOfVirtualPages(),getDistribution());
+		//int pageFaults = calculatePageFaults(refString1, getPageSize(), getMemorySize(), getPolicy()); // FIFO, 16KB
 		
 		
     }
@@ -150,8 +167,57 @@ public final class ReplacementSimulator  extends JFrame{
 		return numOfFaults;
 	}
 
+	public void setMemorySize(int mSize)
+	{
+		
+		memorySize = mSize;
+	}
+	public void setPageSize(int pSize)
+	{
+		pageSize = pSize;
+	}
+	public void setPolicy(int policy)
+	{
+		this.policy = policy; //FIF0 = 0
+	}
+	public void setNumOfReferences(int NumOfRef)
+	{
+		numOfReferences = NumOfRef;
+	}
+	public void setnumOfVirtualPages(int numOfVirtualPages)
+	{
+		this.numOfVirtualPages = numOfVirtualPages;
+	}
+	public void setDistribution(int dist)
+	{
+		distribution = dist;
+	}	
 	
-	
+	public int getMemorySize()
+	{
+		
+		return memorySize;
+	}
+	public int getPageSize()
+	{
+		return pageSize;
+	}
+	public int getPolicy()
+	{
+		return policy; //FIF0 = 0
+	}
+	public int getNumOfReferences()
+	{
+		return numOfReferences;
+	}
+	public int getNumOfVirtualPages()
+	{
+		return numOfVirtualPages;
+	}
+	public int getDistribution()
+	{
+		return distribution;
+	}	
 	
 	public static void main(String[] args) {
 		ReplacementSimulator rs = new ReplacementSimulator();
