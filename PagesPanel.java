@@ -3,7 +3,7 @@ import javax.swing.*;
 /**
  * <<Class summary>>
  *
- * @author Mohammad Khatib & Noura Salhi
+ * @author Mohammad Khatib & Noura Salhi & Walid Abu Salah
  * @version $Rev$
  */
 public final class PagesPanel extends JPanel{

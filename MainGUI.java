@@ -6,7 +6,7 @@ import javax.swing.border.*;
 /**
  * <<Class summary>>
  *
- * @author Mohammad Khatib &lt;&gt;
+ * @author Mohammad Khatib & Noura Salhi & Walid Abu Salah
  * @version $Rev$
  */
 public class MainGUI extends JFrame implements ActionListener {

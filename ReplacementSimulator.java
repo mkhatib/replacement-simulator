@@ -5,16 +5,18 @@ import java.awt.event.*;
 /**
  * <<Class summary>>
  *
- * @author Mohammad Khatib & Noura Salhi
+ * @author Mohammad Khatib & Noura Salhi & Walid Abu Salah
  * @version $Rev$
  */
 public final class ReplacementSimulator extends Thread {
-    PagesPanel pagesPanel;// = new PagesPanel(16);
-	
+    // Panel to show Visually How The Replacement Is Done
+	PagesPanel pagesPanel;
+	// Constants, Distribution types, and Policies
 	public static final int UNIFORM_DIST = 0, GAUSSIAN_DIST = 1;
 	public static final int FIFO = 0, LRU = 1;
 	
-	
+	// Simulator Parameters
+	// Speed of Simulation, Default 1 Second Delay
 	private int delay=1000; //miliseconds
 	private int pageSize = 1; // 1KB
 	private int memorySize;
