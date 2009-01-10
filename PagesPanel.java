@@ -1,11 +1,9 @@
 import java.awt.*;
 import javax.swing.*;
-
-
 /**
  * <<Class summary>>
  *
- * @author Mohammad Khatib &lt;&gt;
+ * @author Mohammad Khatib & Noura Salhi
  * @version $Rev$
  */
 public final class PagesPanel extends JPanel{
@@ -67,14 +65,12 @@ public final class PagesPanel extends JPanel{
 	 */
 	public void highlightPage(int i ) {
 		pageLabels[i].setBackground(Color.WHITE);
-		
 	}
 
 	public void highlightReference(int ref ) {
 		int index = indexOf(ref);
 		if(index == -1) return;
 		pageLabels[index].setBackground(Color.WHITE);
-		
 	}
 	
 	/**
@@ -105,7 +101,6 @@ public final class PagesPanel extends JPanel{
 		int index = indexOf(ref);
 		if(index == -1) return;
 		nextReplace = index;
-		
 	}
 	
 	/**
@@ -132,24 +127,6 @@ public final class PagesPanel extends JPanel{
 		pages[nextReplace] = i;
 		pageLabels[nextReplace].setText(""+i);
 	}
-
-	
-	
-	/**
-	 * paintComponent
-	 *
-	 * @param  
-	 * @return 
-	* /
-	public void paintComponent(Graphics g ) {
-		/*super.paintComponent(g);
-				for(int i=0; i<numberOfPages; i++){
-					g.drawRect((i*50 + 10), 10, 40,40 );
-				}* /
-	}
-	*/
-	
-	
 	
 	/**
 	 * setNumberOfPages
@@ -159,22 +136,5 @@ public final class PagesPanel extends JPanel{
 	 */
 	public void setNumberOfPages(int pages) {
 		numberOfPages = pages;
-	}
-
-
-	
-	
-	
-	
-	public static void main(String[] args) {
-		JFrame frame = new JFrame("Test");
-		PagesPanel pp = new PagesPanel(16);
-		pp.setNumberOfPages(16);
-		frame.add(pp);
-		frame.setSize(800,100);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-		pp.setNextReplacePage(5);
 	}
 }

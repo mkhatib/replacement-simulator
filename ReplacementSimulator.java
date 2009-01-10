@@ -5,7 +5,7 @@ import java.awt.event.*;
 /**
  * <<Class summary>>
  *
- * @author Mohammad Khatib &lt;&gt;
+ * @author Mohammad Khatib & Noura Salhi
  * @version $Rev$
  */
 public final class ReplacementSimulator extends Thread {
@@ -23,6 +23,7 @@ public final class ReplacementSimulator extends Thread {
 	private int numOfVirtualPages;
 	private int numOfReferences;
 	
+	private boolean stopped = false;
 	
 	ArrayList<ActionListener> listeners = new ArrayList<ActionListener>();
 	
@@ -31,28 +32,8 @@ public final class ReplacementSimulator extends Thread {
      * 
      */
     public ReplacementSimulator(PagesPanel pp) {
-		//super();
 		pagesPanel = pp;
-		/* MainGUI mainFrame = new MainGUI(); // Create a frame
-			  
-			  mainFrame.setSize(500, 500); // Set the frame size
-			    mainFrame.setLocationRelativeTo(null); // New since JDK 1.4
-			    mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				
-				
-			     mainFrame.setVisible(true);  */
-			
 		pagesPanel.setNextReplacePage(0);
-		//setSize(600,200);
-		//add(pagesPanel);
-		//setVisible(true);  
-       // int[] refString1 = generateReferenceString(1000,100,UNIFORM_DIST);
-		//int pageFaults = calculatePageFaults(refString1, 1, 16, FIFO); // FIFO, 16KB
-		//System.out.println("Num Of Faults: " + pageFaults);
-		//int[] refString1 = generateReferenceString(getNumOfReferences(),getNumOfVirtualPages(),getDistribution());
-		//int pageFaults = calculatePageFaults(refString1, getPageSize(), getMemorySize(), getPolicy()); // FIFO, 16KB
-		
-		
     }
 	// }}}
 	
@@ -67,14 +48,9 @@ public final class ReplacementSimulator extends Thread {
 			int[] refString1 = generateReferenceString(numOfReferences,numOfVirtualPages,distribution);
 			int pageFaults = calculatePageFaults(refString1, pageSize, memorySize, policy); // FIFO, 16KB
 		} catch (Exception e) {
-			// expression
-		} finally {
-			// expression
-		}
+			e.printStackTrace();
+		} 
 	}
-
-	
-	
 	
 	/**
 	 * generateReferenceString
@@ -97,17 +73,11 @@ public final class ReplacementSimulator extends Thread {
 			for (int i=1; i <= numOfVirtualPages; i++) 
 				sum += i;
 			double mean = sum/numOfVirtualPages;
-			System.out.println("MEAN: " + mean);
-			
 			// Calculation Of The Standard Deviation
 			sum = 0;
 			for(int i=1; i <= numOfVirtualPages; i++)
 				sum += Math.pow((i - mean),2);
 			double standardDeviation = (int) Math.sqrt(sum/(numOfVirtualPages-1));
-			System.out.println("DEVIATION: " + standardDeviation);
-			
-			//for(int i=0; i<numOfReferences; i++)
-			//	referenceString[i] = (int)((1/standardDeviation*Math.sqrt(2*Math.PI)) * Math.exp(-0.5 * Math.pow((numOfVirtualPages-mean)/standardDeviation, 2))); 
 			random = new Random();
 			for(int i=0;i<numOfReferences; i++)
 				referenceString[i] = (int) Math.abs((random.nextGaussian() * standardDeviation) + mean);
@@ -123,14 +93,11 @@ public final class ReplacementSimulator extends Thread {
 	 */
 	public int calculatePageFaults(int[] refStrings, int pageSize, int memorySize, int policy ) {
 		int numOfPages = (int) (memorySize/pageSize);
-		System.out.println("NUM OF PAGES: " + numOfPages);
-		
 		ArrayList<Integer> queue = new ArrayList<Integer>();
 		int numOfFaults=0;
 		if(policy == FIFO){
-			
 			int nextPageIndex=0;
-			for(int i=0; i<refStrings.length; i++){
+			for(int i=0; i<refStrings.length && !stopped; i++){
 				System.out.println("QUEUE: " + queue);
 				System.out.println("ITEM: " + refStrings[i]);
 				if(queue.contains(refStrings[i])) 
@@ -142,7 +109,6 @@ public final class ReplacementSimulator extends Thread {
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-					
 					continue;
 				}
 				if(queue.size() < numOfPages){
@@ -193,11 +159,7 @@ public final class ReplacementSimulator extends Thread {
 				{
 					queue.add(refStrings[i]);
 					if(flag) {
-						System.out.println("NEXT: " + (queue.size()-1));
 						pagesPanel.setPage(refStrings[i]);
-						//pagesPanel.setNextReplacePage(queue.size()-1/*refStrings[i]*/);
-						
-						
 						pagesPanel.setNextReplacePage(queue.size()-1);
 						pagesPanel.setNextReplace(queue.size());	
 					}
@@ -205,11 +167,8 @@ public final class ReplacementSimulator extends Thread {
 					{
 						pagesPanel.setNextReplaceReference(queue.get(0));
 						pagesPanel.setNextReplace(i);						
-						
 					} 
 					else if(queue.size() < numOfPages){
-						System.out.println("NEXT: " + queue.size());
-						
 						pagesPanel.setNextReplacePage(queue.size());
 					}
 					try {
@@ -219,18 +178,15 @@ public final class ReplacementSimulator extends Thread {
 					}
 				}
 				else {
-					//pagesPanel.setNextReplaceReference(queue.get(0));
 					pagesPanel.replacePages(queue.get(0),refStrings[i]);
 					queue.remove(0);
 					queue.add(refStrings[i]);
 					pagesPanel.setNextReplaceRef(queue.get(0));						
-					
 					try {
 						Thread.sleep(delay);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-					
 				}
 				if(flag) {
 					numOfFaults++;
@@ -238,11 +194,20 @@ public final class ReplacementSimulator extends Thread {
 				}
 			}
 		}
-		notifyListeners(new ActionEvent(this,numOfFaults, "Simulation Finished"));
+		if(!stopped)
+			notifyListeners(new ActionEvent(this,numOfFaults, "Simulation Finished"));
 		return numOfFaults;
 	}
 
-
+	/**
+	 * stop
+	 *
+	 * @param  
+	 * @return 
+	 */
+	public void stopProcessing() {
+		stopped = true;
+	}
 
 	/**
 	 * addActionListener
@@ -271,9 +236,7 @@ public final class ReplacementSimulator extends Thread {
 			copy.get(i).actionPerformed(e);
 	}
 
-	
-
-	
+	// Setters and Getters
 	public void setMemorySize(int mSize)
 	{
 		
@@ -299,10 +262,8 @@ public final class ReplacementSimulator extends Thread {
 	{
 		distribution = dist;
 	}	
-	
 	public int getMemorySize()
 	{
-		
 		return memorySize;
 	}
 	public int getPageSize()
@@ -325,13 +286,7 @@ public final class ReplacementSimulator extends Thread {
 	{
 		return distribution;
 	}	
-	
 	public void setDelay(int delay){
 		this.delay = delay;
-	}
-	
-	public static void main(String[] args) {
-		//ReplacementSimulator rs = new ReplacementSimulator();
-		
 	}
 }
